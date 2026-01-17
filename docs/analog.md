@@ -11,7 +11,7 @@ The idea is to drive the ampere meters using pulse width modulation
 (PWM) on the **esp32** to display hours, minutes, (seconds).
 
 The esp32 gpio pins have an output voltage of either 3.3V when on and 0V when 
-off. Bu we really need a (semi) continuous range between 0 and 3.3V.
+off. But we really need a (semi) continuous range between 0 and 3.3V.
 
 We can achieve this by using PWM set to a resonable frequency and varying
 the duty cycle.
@@ -30,8 +30,21 @@ desired maximum current.
 
 In my case $R_0$ is 28.7 $\Omega$ and $R_i$ is 14.4 $\Omega$ .
 
-The resistor value for R is $\frac{U}{I} -2(R_0 + R_i)$
+The resistor value for R is 
 
-Finally I measured the voltage over the two ammeter terminals (A, B) and 
-discovered that the voltage was too high. To reduce it we added a capacitor.
+$R = \frac{U}{I} -2(R_0 + R_i)$
+
+Here U was measured to 3.3V and I was measured to 4.3mA for the maximum amplitude of 
+the needle.
+
+So we have
+
+$R = \frac{3.3V}{4.3mA} -2(28.7 + 14.4) = 681 \Omega$. To give a slightly (5%) larger 
+range for the needle we choose a slightly smaller value of $620 \Omega$.
+
+Finally we measured the voltage over the two ammeter terminals (A, B) using an 
+oscilloscope and discovered that the voltage was too high. This is caused by 
+the response of the electronics to the impulse nature of the PWM signal. 
+
+To reduce it we added a capacitor of $0.39 \micro F$.
 
