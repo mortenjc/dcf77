@@ -12,3 +12,14 @@ class SampleFilter:
         if self.samples < self.n:
             return
         return sum(self.data) // self.n
+
+
+    def median_add(self, value):
+        self.data[self.samples % self.n] = value
+        self.samples += 1
+        if self.samples < self.n:
+            return
+
+        tmp = self.data.copy()
+        tmp.sort()
+        return tmp[self.n//2]

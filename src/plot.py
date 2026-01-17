@@ -1,11 +1,11 @@
-import src.filter
+import src.filter as filter
 import matplotlib.pyplot as plt
 
 def plot(data, args):
     fig, ax = plt.subplots()
 
     n = 5
-    flt = filter.SampleFilter(5)
+    flt = filter.SampleFilter(n)
    
     y = []
     y2 = [0 for x in range(n)]
@@ -13,6 +13,7 @@ def plot(data, args):
         val = max(d[0], 4000)
         y.append(val)
         val2 = flt.add(val)
+        #val2 = flt.median_add(val)
         if val2 != None:
             y2.append(val2)
     t = [x * 0.001 for x in range(len(y))]

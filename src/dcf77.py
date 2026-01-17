@@ -198,6 +198,7 @@ class Decode:
         for i, d in enumerate(data):
             self.i = i
             val = self.flt.add(max(d[0], 4000))
+            #val = self.flt.median_add(max(d[0], 4000))
             if val == None:
                 continue
 
