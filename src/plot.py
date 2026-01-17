@@ -1,4 +1,4 @@
-import filter
+import src.filter
 import matplotlib.pyplot as plt
 
 def plot(data, args):
@@ -20,8 +20,7 @@ def plot(data, args):
     ax.plot(t[args.pbeg:args.pend], y[args.pbeg:args.pend])
     ax.plot(t[args.pbeg:args.pend], y2[args.pbeg:args.pend])
 
-    ax.set(xlabel='time (s)', ylabel='Ampl',
-        title='DCF77 samples')
+    ax.set(xlabel='time (s)', ylabel='Ampl', title='DCF77 samples')
     ax.grid()
     #fig.savefig("test.png")
     plt.show()   

@@ -1,9 +1,9 @@
 import argparse
 import struct
 import sys
-import dcf77
-import plot
-import wavfile
+import src.dcf77 as dcf77
+import src.plot as plot
+import src.wavfile as wavfile
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-import filter
+import src.filter as filter
 
 from dataclasses import dataclass
 from enum import Enum
@@ -13,6 +13,8 @@ class DCFData:
     P1, P2, P3 = 0, 0, 0
     DoM, Month, Year = 0, 0, 0
     DoW = 0
+    # status of decode, not part of DCF77
+    valid = False
 
 
 class SyncState(Enum):
@@ -36,9 +38,9 @@ class DCF77Util:
         p1v = True if (d.P1 + dp1) & 1 == 0 else False
         p2v = True if (d.P2 + dp2) & 1 == 0 else False
         p3v = True if (d.P3 + dp3) & 1 == 0 else False
-        res = d.M == 0 and d.S == 1 and p1v and p2v and p3v
-        status = f'M: {d.M == 0:1}, S: {d.S == 1:1}, P1: {p1v:1}, P2: {p2v:1}, P3: {p3v:1}'
-        return res, status
+        valid = d.M == 0 and d.S == 1 and p1v and p2v and p3v
+        status_text = f'M: {d.M == 0:1}, S: {d.S == 1:1}, P1: {p1v:1}, P2: {p2v:1}, P3: {p3v:1}'
+        return valid, status_text
     
     def BCD(l):
         coeff = [1, 2, 4, 8, 10, 20, 40, 80]
@@ -87,15 +89,17 @@ class DCF77Util:
         d.DoM, d.Month, d.Year = DCF77Util.BCD(days), DCF77Util.BCD(month), DCF77Util.BCD(year)
         d.DoW = DCF77Util.BCD(dayofweek)
 
-        res, status = DCF77Util.validate(d, mp, hp, dp)
+        valid, status_text = DCF77Util.validate(d, mp, hp, dp)
+        d.valid = valid
 
-        decode = 'good ' if  res else 'error'
-        print(f'decode: ({decode}) {d.DoM:02}-{d.Month:02}-{d.Year:02} ({day[d.DoW]}) {d.hours:02}:{d.minutes:02} ({tz:4}) - {status}')
-        return d, res
-
-
-
-
+        if valid:
+            decode = 'good '
+            s = ''
+        else:
+            decode = 'error'
+            s = '- ' + status_text
+        print(f'decode: ({decode}) {d.DoM:02}-{d.Month:02}-{d.Year:02} ({day[d.DoW]}) {d.hours:02}:{d.minutes:02} ({tz:4}) {s}')
+        return d
 
 
 
@@ -108,7 +112,7 @@ class Decode:
         self.i = 0
         self.refm = 0
         self.hilo_thr = threshold
-        self.t_silent = 1700
+        self.t_silent = 1700 # quiet period is 1s + preceeding high period (minimum 1800)
         self.thi, self.tlo  = 0, 0
         self.state = SyncState.Init
         self.s = 0
@@ -129,29 +133,48 @@ class Decode:
             self.tlo += 1
         else:
             # print(f'low  -> high - low  time {tlo:3}, s {s:3}')
+            # roll back to state High if low interval is too short
+            # could do the same in the opposite direction, but currently
+            # not implemented
+            if self.tlo < 17:
+                self.thi = self.prevthi + self.tlo
+                self.tlo = 0
+                self.state = SyncState.High
+                self.s -= 1
+                return
+
+            # Regular transition from low to high
             res = DCF77Util.decode_bit(self.tlo)
             if res == 'err':
                 print(f'{self.state}: error in bit decode at {self.i}: {self.tlo}')
-                self.state = SyncState.Init
+                self.state = SyncState.High
                 self.thi = 0
                 self.tlo = 0
                 self.s = 0
                 return
+
+            #
             self.bits[self.s] = res
             self.tlo = 0
             self.state = SyncState.High
 
 
     def state_high(self, val):
+        # if data is still high we just count the time ticks in this state
         if val > self.hilo_thr:
             self.thi += 1
         else:
+            # Transition from high to low marks a new second (and of course minute)
+
+            # Minute marker
+            # this is where we decode the data buffer
             if self.thi > self.t_silent:
                 # print(f'high -> low  - high time {thi:3}')  
                 print(f'#### MINUTE MARK #### - {self.i} {self.s}')
-                if self.s == 58:
-                    d, good = DCF77Util.DCF77Decode(self.bits)
-                    if not self.synched and good:
+                if self.s == 58: # the 59th second
+                    d = DCF77Util.DCF77Decode(self.bits)
+
+                    if not self.synched and d.valid:
                         if self.goodcount == 0:
                             self.refm = d.hours*60 + d.minutes
                             print(f'  ref minutes {self.refm}')
@@ -161,9 +184,12 @@ class Decode:
                                 print(f'  two consecutive good decodes. time synched to {d.hours:02}:{d.minutes:02}')
                                 self.synched = True
                             self.goodcount = 0
+                else:
+                    print(f'decode: (error) second {self.s}')
                 self.s = 0
             else:
                 self.s += 1
+            self.prevthi = self.thi
             self.thi = 0
             self.state = SyncState.Low
 
