@@ -21,14 +21,14 @@ divider circuit that supports this.
 
 ![](images/voltage_divider.png)
 
-Here r0 is the internal resistance of the ESP32 gpio pin(s) and ri is 
+Here $R_0$ is the internal resistance of the ESP32 gpio pin(s) and $R_i$ is 
 the internal resistance of the ammeter. These are fixed values and need 
 to be measured.
 
 Once these are known we need to calculate the value of R to achieve the
 desired maximum current.
 
-In my case $R_0$ is 28.7$ \Omega$ and $R_i$ is 14.4 $\Omega$ .
+In my case $R_0$ is 28.7 $\Omega$ and $R_i$ is 14.4 $\Omega$ .
 
 The resistor value for R is $\frac{U}{I} -2(R_0 + R_i)$
 
