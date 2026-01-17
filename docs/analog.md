@@ -51,9 +51,9 @@ To reduce it we added a capacitor of $0.39 \micro F$.
 
 A final test, after calibrating the 0 and 3.3V output and setting the meter to 33.3 % looks good:
 
-![](images/meter_33pct.png)
+![](images/meter_33pct.jpg)
 
 The current test setup:
 
-![](images/meter_setup.png)
+![](images/meter_setup.jpg)
 
