@@ -1,6 +1,8 @@
 
 
+## Antenna circuit
 
+To be added
 
 
 ## Driving the ampere meters
@@ -26,7 +28,9 @@ to be measured.
 Once these are known we need to calculate the value of R to achieve the
 desired maximum current.
 
-In my case r0 is 28 Ohms and ri is 13 Ohms.
+In my case $R_0$ is 28.7$\Omega$ and $R_i$ is 14.4$\Omega$.
+
+The resistor value for R $\frac{U}{I} -2(R_0 + R_i)$
 
 Finally I measured the voltage over the two ammeter terminals (A, B) and 
 discovered that the voltage was too high. To reduce it we added a capacitor.
